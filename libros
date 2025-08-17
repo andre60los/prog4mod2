@@ -1,0 +1,7 @@
+CREATE TABLE libros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo TEXT NOT NULL,
+    autor TEXT NOT NULL,
+    genero TEXT,
+    estado_lectura TEXT CHECK(estado_lectura IN ('leído', 'no leído')) NOT NULL
+);
