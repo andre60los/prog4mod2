@@ -1,0 +1,108 @@
+import sqlite3
+
+DB_NAME = "biblioteca.db"
+
+def conectar():
+    conn = sqlite3.connect(DB_NAME)
+    return conn
+
+def crear_tabla():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS libros (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titulo TEXT NOT NULL,
+            autor TEXT NOT NULL,
+            genero TEXT,
+            estado_lectura TEXT CHECK(estado_lectura IN ('leído', 'no leído')) NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def agregar_libro():
+    titulo = input("Título: ")
+    autor = input("Autor: ")
+    genero = input("Género: ")
+    estado = input("Estado de lectura (leído/no leído): ").lower()
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO libros (titulo, autor, genero, estado_lectura) VALUES (?, ?, ?, ?)",
+                   (titulo, autor, genero, estado))
+    conn.commit()
+    conn.close()
+    print("✅ Libro agregado.")
+
+def actualizar_libro():
+    id_libro = input("ID del libro a actualizar: ")
+    campo = input("Campo a modificar (titulo, autor, genero, estado_lectura): ")
+    nuevo_valor = input(f"Nuevo valor para {campo}: ")
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE libros SET {campo} = ? WHERE id = ?", (nuevo_valor, id_libro))
+    conn.commit()
+    conn.close()
+    print("✅ Libro actualizado.")
+
+def eliminar_libro():
+    id_libro = input("ID del libro a eliminar: ")
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM libros WHERE id = ?", (id_libro,))
+    conn.commit()
+    conn.close()
+    print("🗑️ Libro eliminado.")
+
+def ver_libros():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM libros")
+    libros = cursor.fetchall()
+    conn.close()
+    print("\n📚 Listado de libros:")
+    for libro in libros:
+        print(libro)
+
+def buscar_libros():
+    criterio = input("Buscar por (titulo, autor, genero): ")
+    valor = input(f"Valor de búsqueda para {criterio}: ")
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM libros WHERE {criterio} LIKE ?", ('%' + valor + '%',))
+    resultados = cursor.fetchall()
+    conn.close()
+    print("\n🔍 Resultados de búsqueda:")
+    for libro in resultados:
+        print(libro)
+
+def menu():
+    crear_tabla()
+    while True:
+        print("\n📖 Menú de Biblioteca")
+        print("1. Agregar nuevo libro")
+        print("2. Actualizar información de un libro")
+        print("3. Eliminar libro existente")
+        print("4. Ver listado de libros")
+        print("5. Buscar libros")
+        print("6. Salir")
+        opcion = input("Selecciona una opción: ")
+
+        if opcion == "1":
+            agregar_libro()
+        elif opcion == "2":
+            actualizar_libro()
+        elif opcion == "3":
+            eliminar_libro()
+        elif opcion == "4":
+            ver_libros()
+        elif opcion == "5":
+            buscar_libros()
+        elif opcion == "6":
+            print("👋 ¡Hasta luego!")
+            break
+        else:
+            print("❌ Opción no válida.")
+
+if __name__ == "__main__":
+    menu()
